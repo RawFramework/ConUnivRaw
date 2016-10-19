@@ -1,0 +1,68 @@
+<div id="department_template">
+    @{
+        ViewBag.page = "Department";
+        ViewBag.Title = "Department | List";
+        Layout = "~/Views/Shared/_Layout.cshtml";   
+    }
+
+
+    <input type="hidden" id="refresh" value="no">
+
+    <h2>Details</h2>
+    <div data-bind="foreach: Departments" id="details_department">
+        <table class="table table">
+            <thead>
+                <tr>
+                    <th>
+                        Department
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td>Name:</td>
+                <td>
+                    <label class='display-label' data-bind='text: Department.Name'></label>
+                </td>
+            </tr>
+            <tr>
+                <td>Budget:</td>
+                <td>
+                    <label class='display-label' data-bind='text: Department.Budget'></label>
+                </td>
+            </tr>
+            <tr>
+                <td>StartDate:</td>
+                <td>
+                    <label class='display-label' data-bind='text: Department.StartDate'></label>
+                </td>
+            </tr>
+            <tr>
+                <td>InstructorID:</td>
+                <td>
+                    <label class='display-label' data-bind='text: Department.InstructorID'></label>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <a data-bind="attr: {href:'/Department'}" class="btn btn-primary">Back</a>
+        <a data-bind="attr: {href:'/Department/Edit/' + Department.Id}" class="btn btn-primary">Edit</a>
+    </div>
+
+    <script>
+        require(["/js/app/Department.controller.js", "/js/app/Department.binding.js", 'utils'], function (departmentController, appViewModel, utils) {
+            utils.spinner.show();
+            var promise = departmentController.getDepartment("@ViewBag.id");
+
+            promise.done(function (ajaxResult) {
+                var model = ajaxResult.department;
+                model.Department.StartDate = moment(model.Department.StartDate).format('l');
+                appViewModel.add(model);
+
+                utils.spinner.hide();
+            });
+        });
+    </script>
+</div>

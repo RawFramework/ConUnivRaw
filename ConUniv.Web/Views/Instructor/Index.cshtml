@@ -1,0 +1,60 @@
+<div id="instructor_template">
+    @{
+        ViewBag.page = "Instructor";
+        ViewBag.Title = "Instructor | List";
+        Layout = "~/Views/Shared/_Layout.cshtml";   
+    }
+
+
+    <input type="hidden" id="refresh" value="no">
+
+    <h2>Instructor</h2>
+    <div id="index_instructor">
+        <table class="table table-striped" >
+        <thead>
+            <tr>
+                
+            <th>
+                LastName
+            </th>
+            <th>
+                FirstName
+            </th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: Instructors">
+            <tr>
+                
+            <td>
+                <label class='display-label' data-bind='text: LastName'></label>
+            </td>
+            <td>
+                <label class='display-label' data-bind='text: FirstName'></label>
+            </td>
+                <td><a data-bind="attr: {href: '/Instructor/Details/' + Id}">Details</a></td>
+                <td><a data-bind="attr: {href: '/Instructor/Edit/' + Id}">Edit</a></td>
+                <td><a data-bind="click: $parent.remove" href="javascript:void(0);">Remove</a></td>
+            </tr>
+        </tbody>
+    </table>
+
+    </div>
+    <a href="/Instructor/Create" class="btn btn-primary">Add</a>
+        
+    <script>
+        require(["/js/app/Instructor.controller.js", "/js/app/Instructor.binding.js", 'moment', 'utils', 'underscore' ], function (instructorController, appViewModel, moment, utils, _) {
+            utils.spinner.show();
+            var promise = instructorController.getInstructors();
+
+            promise.done(function (ajaxResult) {
+                _.each(ajaxResult.instructors, function (item) {
+                    var model = ajaxResult.instructors;
+                    item.HireDate = moment(item.HireDate).format('l');
+                    appViewModel.add(item);
+                });
+
+                utils.spinner.hide();
+            });
+        });
+    </script>
+</div>

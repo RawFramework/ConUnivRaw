@@ -1,0 +1,91 @@
+<div id="student_template">
+    @{
+        ViewBag.page = "Student";
+        ViewBag.Title = "Student | List";
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+
+
+    <input type="hidden" id="refresh" value="no">
+
+    <h2>Details</h2>
+    <div data-bind="foreach: Students" id="details_student">
+        <table class="table table">
+            <thead>
+                <tr>
+                    <th>
+                        Student
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <tr>
+                    <td>LastName:</td>
+                    <td>
+                        <label class='display-label' data-bind='text: Student.LastName'></label>
+                    </td>
+                </tr>
+                <tr>
+                    <td>FirstName:</td>
+                    <td>
+                        <label class='display-label' data-bind='text: Student.FirstName'></label>
+                    </td>
+                </tr>
+                <tr>
+                    <td>EnrollmentDate:</td>
+                    <td>
+                        <label class='display-label' data-bind='text: Student.EnrollmentDate'></label>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Course(s):</td>
+                    <td>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+
+                                    <th>
+                                        Title
+                                    </th>
+                                    <th>
+                                        Credits
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach: Courses">
+                                <tr>
+
+                                    <td>
+                                        <label class='display-label' data-bind='text: Title'></label>
+                                    </td>
+                                    <td>
+                                        <label class='display-label' data-bind='text: Credits'></label>
+                                    </td>                                    
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <a data-bind="attr: {href:'/Student'}" class="btn btn-primary">Back</a>
+        <a data-bind="attr: {href:'/Student/Edit/' + Student.Id}" class="btn btn-primary">Edit</a>
+    </div>
+
+    <script>
+        require(["/js/app/Student.controller.js", "/js/app/Student.binding.js", 'utils'], function (studentController, appViewModel, utils) {
+            utils.spinner.show();
+            var promise = studentController.getStudent("@ViewBag.id");
+
+            promise.done(function (ajaxResult) {
+                var model = ajaxResult.student;
+                model.Student.EnrollmentDate = moment(model.Student.EnrollmentDate).format('l');
+                appViewModel.add(model);
+
+                utils.spinner.hide();
+            });
+        });
+    </script>
+</div>

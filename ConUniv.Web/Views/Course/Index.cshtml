@@ -1,0 +1,60 @@
+<div id="course_template">
+    @{
+        ViewBag.page = "Course";
+        ViewBag.Title = "Course | List";
+        Layout = "~/Views/Shared/_Layout.cshtml";   
+    }
+
+
+    <input type="hidden" id="refresh" value="no">
+
+    <h2>Course</h2>
+    <div id="index_course">
+        <table class="table table-striped" >
+        <thead>
+            <tr>
+                
+            <th>
+                Title
+            </th>
+            <th>
+                Credits
+            </th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: Courses">
+            <tr>
+                
+            <td>
+                <label class='display-label' data-bind='text: Title'></label>
+            </td>
+            <td>
+                <label class='display-label' data-bind='text: Credits'></label>
+            </td>
+                <td><a data-bind="attr: {href: '/Course/Details/' + Id}">Details</a></td>
+                <td><a data-bind="attr: {href: '/Course/Edit/' + Id}">Edit</a></td>
+                <td><a data-bind="click: $parent.remove" href="javascript:void(0);">Remove</a></td>
+            </tr>
+        </tbody>
+    </table>
+
+    </div>
+    <a href="/Course/Create" class="btn btn-primary">Add</a>
+        
+    <script>
+        require(["/js/app/Course.controller.js", "/js/app/Course.binding.js", 'moment', 'utils', 'underscore' ], function (courseController, appViewModel, moment, utils, _) {
+            utils.spinner.show();
+            var promise = courseController.getCourses();
+
+            promise.done(function (ajaxResult) {
+                _.each(ajaxResult.courses, function (item) {
+                    var model = ajaxResult.courses;
+                    
+                    appViewModel.add(item);
+                });
+
+                utils.spinner.hide();
+            });
+        });
+    </script>
+</div>

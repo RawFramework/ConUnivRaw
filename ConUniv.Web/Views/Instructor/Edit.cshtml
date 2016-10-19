@@ -1,0 +1,173 @@
+<div id="instructor_template">
+    @{
+        ViewBag.page = "Instructor";
+        ViewBag.Title = "Instructor | List";
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+
+
+    <div class="page-header text-center">
+        <h2>Edit</h2>
+    </div>
+    <form id="edit_instructor_form" method="post" class="form-horizontal instructor_form" action="Edit" role="form" data-bind="foreach: Instructors">
+
+        <div class='form-group'>
+            <div class='col-sm-4'>
+                <input type='text' name='Id' data-bind='value: Instructor.Id' hidden />
+            </div>
+        </div>
+
+        <div class='form-group'>
+            <label class='col-sm-2 control-label'>LastName</label>
+            <div class='col-sm-4'>
+                <input type='text' class='form-control' name='LastName' data-bind='value: Instructor.LastName' />
+            </div>
+        </div>
+
+        <div class='form-group'>
+            <label class='col-sm-2 control-label'>FirstName</label>
+            <div class='col-sm-4'>
+                <input type='text' class='form-control' name='FirstName' data-bind='value: Instructor.FirstName' />
+            </div>
+        </div>
+
+        <div class='form-group'>
+            <label class='col-sm-2 control-label'>HireDate</label>
+            <div class='col-sm-4'>
+                <div class='input-group date' id='HireDate'>
+                    <input type='text' class='form-control' name='HireDate' data-bind='datetimepicker: $parent.dateSelected' />
+                    <span class='input-group-addon'>
+                        <span class='glyphicon glyphicon-calendar'></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class='form-group'>
+            <label class='col-sm-2 control-label'></label>
+            <div class='col-sm-4'>
+                <div class='input-group date' id='addCourse'>
+                    <input type='hidden' name='CourseID' id='CourseID' />
+                    <input type='text' name='CourseName' class='form-control autocomplete' placeholder="Add new Course"
+                           searchfield='Title' idfield='Id' showfield='Title' order='Title' referencedtable='Course' />
+                    <span class='input-group-addon addCourse'>
+                        <span class='glyphicon glyphicon-plus'></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+
+        <div class='form-group'>
+            <label class='col-sm-2 control-label'>Course(s)</label>
+            <div class='col-sm-4'>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+
+                            <th>
+                                Name
+                            </th>
+                            <th>
+                                Credits
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: Courses">
+                        <tr>
+
+                            <td>
+                                <label class='display-label' data-bind='text: Title'></label>
+                            </td>
+                            <td>
+                                <label class='display-label' data-bind='text: Credits'></label>
+                            </td>
+
+                            <td><a data-bind="attr: {href: '/Course/Edit/' + Id}">Edit Course</a></td>
+                            <td><a data-bind="attr: {id: Id}" class="deleteCourse" style="cursor:pointer;">Unregister</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        
+
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <!-- Do NOT use name="submit" or id="submit" for the Submit button -->
+                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="button" class="btn btn-danger" onclick="window.history.go(-1)">Cancel</button>
+            </div>
+        </div>
+    </form>
+
+    <script>
+        require(["/js/app/Instructor.controller.js", "/js/app/Instructor.binding.js", "/js/app/Instructor.validate.js", 'utils', 'typeahead'], function (instructorController, appViewModel, formValidator, utils, type) {
+            utils.spinner.show();
+            var promise = instructorController.getInstructor("@ViewBag.id");
+            promise.done(function (ajaxResult) {
+                var model = ajaxResult.instructor;
+                model.Instructor.HireDate = moment(model.Instructor.HireDate);
+                appViewModel.add(model);
+                formValidator.initViewModel(appViewModel);
+                formValidator.initValidator();
+
+                //The typeahead
+                $.each($('.autocomplete'), function (index, element) {
+                    $(element).typeahead({
+                        onSelect: function (item) {
+                            if (item.value == '00000000-0000-0000-0000-000000000000')
+                                setTimeout(function () { $(element).val(''); }, 100);
+                            //the sibling holds the id
+                            $(element).parent().children(':hidden:first').val(item.value).change();
+                        },
+                        ajax: {
+                            url: '/' + $(element).attr('referencedtable') + '/search?searchField=' + $(element).attr('searchfield') + '&idField=' + $(element).attr('idfield') + '&showField=' + $(element).attr('showfield') + '&order=' + $(element).attr('order'),
+                            triggerLength: 2
+                        }
+                    });
+                });
+                //fill the autocomplete text boxes
+                $.each($('.autocomplete'), function (index, element) {
+                    //launch a search for each hidden
+                    $.get(
+                        '/' + $(element).attr('referencedtable') + '/GetTextForAutocomplete?id=' + $(element).parent().children(':hidden:first').val() + '&idField=' + $(element).attr('idfield') + '&showField=' + $(element).attr('showfield'),
+                        {},
+                        function (data) {
+                            $(element).val(data.name);
+                        });
+
+                });
+
+                $('.addCourse').on('click', function () {
+                    var cId = $('#CourseID').val();
+                    if (cId == '' || cId == undefined || cId == '00000000-0000-0000-0000-000000000000') {
+                        alert('You must select a value from the suggestions');
+                        return;
+                    }
+
+                    //add the course to the user and reload the page
+                    $.post('/Instructor/AddCourse',
+                        { instructorId: '@ViewBag.id', courseId: cId },
+                        function () {
+                            window.location.reload();
+                        });
+                });
+
+                $('.deleteCourse').on('click', function () {
+                    var cId = $(this).attr('id');
+                    //add the course to the user and reload the page
+                    $.post('/Instructor/DeleteCourse',
+                        { ciId: cId },
+                        function () {
+                            window.location.reload();
+                        });
+                });
+
+
+                utils.spinner.hide();
+            });
+        });
+    </script>
+</div>

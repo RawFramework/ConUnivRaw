@@ -1,0 +1,93 @@
+<div id="instructor_template">
+    @{
+        ViewBag.page = "Instructor";
+        ViewBag.Title = "Instructor | List";
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+
+
+    <input type="hidden" id="refresh" value="no">
+
+    <h2>Details</h2>
+    <div data-bind="foreach: Instructors" id="details_instructor">
+        <table class="table table">
+            <thead>
+                <tr>
+                    <th>
+                        Instructor
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <tr>
+                    <td>LastName:</td>
+                    <td>
+                        <label class='display-label' data-bind='text: Instructor.LastName'></label>
+                    </td>
+                </tr>
+                <tr>
+                    <td>FirstName:</td>
+                    <td>
+                        <label class='display-label' data-bind='text: Instructor.FirstName'></label>
+                    </td>
+                </tr>
+                <tr>
+                    <td>HireDate:</td>
+                    <td>
+                        <label class='display-label' data-bind='text: Instructor.HireDate'></label>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Course(s):</td>
+                    <td>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+
+                                    <th>
+                                        Title
+                                    </th>
+                                    <th>
+                                        Credits
+                                    </th>
+                                   
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach: Courses">
+                                <tr>
+
+                                    <td>
+                                        <label class='display-label' data-bind='text: Title'></label>
+                                    </td>
+                                    <td>
+                                        <label class='display-label' data-bind='text: Credits'></label>
+                                    </td>
+                                    
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <a data-bind="attr: {href:'/Instructor'}" class="btn btn-primary">Back</a>
+        <a data-bind="attr: {href:'/Instructor/Edit/' + Instructor.Id}" class="btn btn-primary">Edit</a>
+    </div>
+
+    <script>
+        require(["/js/app/Instructor.controller.js", "/js/app/Instructor.binding.js", 'utils'], function (instructorController, appViewModel, utils) {
+            utils.spinner.show();
+            var promise = instructorController.getInstructor("@ViewBag.id");
+
+            promise.done(function (ajaxResult) {
+                var model = ajaxResult.instructor;
+                model.Instructor.HireDate = moment(model.Instructor.HireDate).format('l');
+                appViewModel.add(model);
+
+                utils.spinner.hide();
+            });
+        });
+    </script>
+</div>

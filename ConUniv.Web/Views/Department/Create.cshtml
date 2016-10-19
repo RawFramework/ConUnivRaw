@@ -1,0 +1,92 @@
+<div id="department_template">
+    @{
+        ViewBag.page = "Department";
+        ViewBag.Title = "Department | List";
+        Layout = "~/Views/Shared/_Layout.cshtml";   
+    }
+
+
+    <div class="page-header text-center">
+        <h2>Create</h2>
+    </div>
+    <form id="create_department_form" method="post" class="form-horizontal department_form" action="create" role="form" data-bind="foreach: Departments">
+        
+                    <div class='form-group'>
+                        <label class='col-sm-2 control-label'>Name</label>
+                        <div class='col-sm-4'>
+                            <input type='text' class='form-control' name='Name' data-bind='value: Department.Name'/>
+                        </div>
+                    </div>
+                    
+                    <div class='form-group'>
+                        <label class='col-sm-2 control-label'>Budget</label>
+                        <div class='col-sm-4'>
+                            <input type='text' class='form-control' name='Budget' data-bind='value: Department.Budget'/>
+                        </div>
+                    </div>
+                    
+                    <div class='form-group'>
+                        <label class='col-sm-2 control-label'>StartDate</label>
+                        <div class='col-sm-4'>
+                            <div class='input-group date' id='StartDate'>
+                                <input type='text' class='form-control' name='StartDate' data-bind='datetimepicker: $parent.dateSelected'/>
+                                <span class='input-group-addon'>
+                                    <span class='glyphicon glyphicon-calendar'></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class='form-group'>
+                        <label class='col-sm-2 control-label'>InstructorID</label>
+                        <div class='col-sm-4'>
+                            <input type='hidden' name='InstructorID' data-bind='value: Department.InstructorID'/>
+                            <input type='text' name='InstructorIDName' class='form-control autocomplete' 
+                            searchfield='FirstName' idfield='Id' showfield='FirstName' order='FirstName' referencedtable='Instructor'
+                            />
+                        </div>
+                    </div>
+                    
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <!-- Do NOT use name="submit" or id="submit" for the Submit button -->
+                <button type="submit" class="btn btn-primary">Create</button>
+
+            </div>
+        </div>
+    </form>
+    <script>
+        require(["/js/app/Department.controller.js", "/js/app/Department.binding.js", "/js/app/Department.validate.js", 'utils','typeahead'], function (departmentController, appViewModel, formValidator, utils, type) {
+            utils.spinner.show();
+            var promise = departmentController.getDepartment("00000000-0000-0000-0000-000000000000");
+            promise.done(function (ajaxResult) {
+                var model = ajaxResult.department;
+                model.Department.StartDate = moment(model.Department.StartDate);
+                appViewModel.add(model);
+                //set the root element
+                appViewModel.rootElement='create_department_form';
+                formValidator.initViewModel(appViewModel);
+                formValidator.initValidator();
+                //The typeahead 
+                $.each($('.autocomplete'),function (index,element) {
+                    $(element).typeahead({
+                        onSelect: function (item) {
+                            if (item.value == '00000000-0000-0000-0000-000000000000')
+                                setTimeout(function () { $(element).val(''); }, 100);
+                            //the sibling holds the id
+                            $(element).parent().children(':hidden:first').val(item.value).change();
+                        },
+                        ajax: {
+                            url:  '/' + $(element).attr('referencedtable') + '/search?searchField=' + $(element).attr('searchfield') + '&idField=' + $(element).attr('idfield') + '&showField=' + $(element).attr('showfield') + '&order=' + $(element).attr('order'),
+                            triggerLength: 2
+                        }
+                    });
+                });
+
+                utils.spinner.hide();
+            });
+
+            
+        });
+    </script>
+</div>

@@ -1,0 +1,61 @@
+<div id="department_template">
+    @{
+        ViewBag.page = "Department";
+        ViewBag.Title = "Department | List";
+        Layout = "~/Views/Shared/_Layout.cshtml";   
+    }
+
+
+    <input type="hidden" id="refresh" value="no">
+
+    <h2>Department</h2>
+    <div id="index_department">
+        <table class="table table-striped" >
+        <thead>
+            <tr>
+                
+            <th>
+                Name
+            </th>
+            <th>
+                Budget
+            </th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: Departments">
+            <tr>
+                
+            <td>
+                <label class='display-label' data-bind='text: Name'></label>
+            </td>
+            <td>
+                <label class='display-label' data-bind='text: Budget'></label>
+            </td>
+            
+                <td><a data-bind="attr: {href: '/Department/Details/' + Id}">Details</a></td>
+                <td><a data-bind="attr: {href: '/Department/Edit/' + Id}">Edit</a></td>
+                <td><a data-bind="click: $parent.remove" href="javascript:void(0);">Remove</a></td>
+            </tr>
+        </tbody>
+    </table>
+
+    </div>
+    <a href="/Department/Create" class="btn btn-primary">Add</a>
+        
+    <script>
+        require(["/js/app/Department.controller.js", "/js/app/Department.binding.js", 'moment', 'utils', 'underscore' ], function (departmentController, appViewModel, moment, utils, _) {
+            utils.spinner.show();
+            var promise = departmentController.getDepartments();
+
+            promise.done(function (ajaxResult) {
+                _.each(ajaxResult.departments, function (item) {
+                    var model = ajaxResult.departments;
+                    item.StartDate = moment(item.StartDate).format('l');
+                    appViewModel.add(item);
+                });
+
+                utils.spinner.hide();
+            });
+        });
+    </script>
+</div>

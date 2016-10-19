@@ -1,0 +1,60 @@
+<div id="student_template">
+    @{
+        ViewBag.page = "Student";
+        ViewBag.Title = "Student | List";
+        Layout = "~/Views/Shared/_Layout.cshtml";   
+    }
+
+
+    <input type="hidden" id="refresh" value="no">
+
+    <h2>Student</h2>
+    <div id="index_student">
+        <table class="table table-striped" >
+        <thead>
+            <tr>
+                
+            <th>
+                LastName
+            </th>
+            <th>
+                FirstName
+            </th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: Students">
+            <tr>
+                
+            <td>
+                <label class='display-label' data-bind='text: LastName'></label>
+            </td>
+            <td>
+                <label class='display-label' data-bind='text: FirstName'></label>
+            </td>
+                <td><a data-bind="attr: {href: '/Student/Details/' + Id}">Details</a></td>
+                <td><a data-bind="attr: {href: '/Student/Edit/' + Id}">Edit</a></td>
+                <td><a data-bind="click: $parent.remove" href="javascript:void(0);">Remove</a></td>
+            </tr>
+        </tbody>
+    </table>
+
+    </div>
+    <a href="/Student/Create" class="btn btn-primary">Add</a>
+        
+    <script>
+        require(["/js/app/Student.controller.js", "/js/app/Student.binding.js", 'moment', 'utils', 'underscore' ], function (studentController, appViewModel, moment, utils, _) {
+            utils.spinner.show();
+            var promise = studentController.getStudents();
+
+            promise.done(function (ajaxResult) {
+                _.each(ajaxResult.students, function (item) {
+                    var model = ajaxResult.students;
+                    item.EnrollmentDate = moment(item.EnrollmentDate).format('l');
+                    appViewModel.add(item);
+                });
+
+                utils.spinner.hide();
+            });
+        });
+    </script>
+</div>

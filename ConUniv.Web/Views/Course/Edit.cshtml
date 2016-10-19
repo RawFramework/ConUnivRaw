@@ -1,0 +1,99 @@
+<div id="course_template">
+    @{
+        ViewBag.page = "Course";
+        ViewBag.Title = "Course | List";
+        Layout = "~/Views/Shared/_Layout.cshtml";   
+    }
+
+
+    <div class="page-header text-center">
+        <h2>Edit</h2>
+    </div>
+    <form id="edit_course_form" method="post" class="form-horizontal course_form" action="Edit" role="form" data-bind="foreach: Courses">
+        
+                    <div class='form-group'>
+                        <div class='col-sm-4'>
+                            <input type='text' name='Id' data-bind='value: Course.Id' hidden/>
+                        </div>
+                    </div>
+                    
+                    <div class='form-group'>
+                        <label class='col-sm-2 control-label'>Title</label>
+                        <div class='col-sm-4'>
+                            <input type='text' class='form-control' name='Title' data-bind='value: Course.Title'/>
+                        </div>
+                    </div>
+                    
+                    <div class='form-group'>
+                        <label class='col-sm-2 control-label'>Credits</label>
+                        <div class='col-sm-4'>
+                            <input type='text' class='form-control' name='Credits' data-bind='value: Course.Credits'/>
+                        </div>
+                    </div>
+                    
+                    <div class='form-group'>
+                        <label class='col-sm-2 control-label'>Department</label>
+                        <div class='col-sm-4 selectContainer'>
+                            <select name='DepartmentID' class='form-control' 
+                            data-bind='options: Departments, 
+                            optionsCaption: "Choose one..." , 
+                            optionsText: function(item){return item.Name},
+                            optionsValue: function(item){return item.Id},
+                            value: Course.DepartmentID'>
+                            </select>
+                        </div>
+                    </div>
+                    
+
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <!-- Do NOT use name="submit" or id="submit" for the Submit button -->
+                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="button" class="btn btn-danger" onclick="window.history.go(-1)">Cancel</button>
+            </div>
+        </div>
+    </form>
+
+    <script>
+        require(["/js/app/Course.controller.js", "/js/app/Course.binding.js", "/js/app/Course.validate.js", 'utils','typeahead'], function (courseController, appViewModel, formValidator, utils,type) {
+            utils.spinner.show();
+            var promise = courseController.getCourse("@ViewBag.id");
+            promise.done(function (ajaxResult) {
+                var model = ajaxResult.course;
+                  
+                appViewModel.add(model);
+                formValidator.initViewModel(appViewModel);
+                formValidator.initValidator();
+
+                //The typeahead 
+                $.each($('.autocomplete'),function (index,element) {
+                    $(element).typeahead({
+                        onSelect: function (item) {
+                            if (item.value == '00000000-0000-0000-0000-000000000000')
+                                setTimeout(function () { $(element).val(''); }, 100);
+                            //the sibling holds the id
+                            $(element).parent().children(':hidden:first').val(item.value).change();
+                        },
+                        ajax: {
+                            url:  '/' + $(element).attr('referencedtable') + '/search?searchField=' + $(element).attr('searchfield') + '&idField=' + $(element).attr('idfield') + '&showField=' + $(element).attr('showfield') + '&order=' + $(element).attr('order'),
+                            triggerLength: 2
+                        }
+                    });
+                });
+                //fill the autocomplete text boxes
+                $.each($('.autocomplete'),function (index,element) {
+                    //launch a search for each hidden
+                    $.get(
+                        '/' + $(element).attr('referencedtable') + '/GetTextForAutocomplete?id=' + $(element).parent().children(':hidden:first').val() + '&idField=' + $(element).attr('idfield') + '&showField=' + $(element).attr('showfield'),
+                        {},
+                        function (data){
+                            $(element).val(data.name);
+                        });
+                    
+                });
+
+                utils.spinner.hide();
+            });
+        });
+    </script>
+</div>

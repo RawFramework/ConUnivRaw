@@ -1,0 +1,56 @@
+<div id="course_template">
+    @{
+        ViewBag.page = "Course";
+        ViewBag.Title = "Course | List";
+        Layout = "~/Views/Shared/_Layout.cshtml";   
+    }
+
+
+    <input type="hidden" id="refresh" value="no">
+
+    <h2>Details</h2>
+    <div data-bind="foreach: Courses" id="details_course">
+        <table class="table table">
+            <thead>
+                <tr>
+                    <th>
+                        Course
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td>Title:</td>
+                <td>
+                    <label class='display-label' data-bind='text: Course.Title'></label>
+                </td>
+            </tr>
+            <tr>
+                <td>Credits:</td>
+                <td>
+                    <label class='display-label' data-bind='text: Course.Credits'></label>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <a data-bind="attr: {href:'/Course'}" class="btn btn-primary">Back</a>
+        <a data-bind="attr: {href:'/Course/Edit/' + Course.Id}" class="btn btn-primary">Edit</a>
+    </div>
+
+    <script>
+        require(["/js/app/Course.controller.js", "/js/app/Course.binding.js", 'utils'], function (courseController, appViewModel, utils) {
+            utils.spinner.show();
+            var promise = courseController.getCourse("@ViewBag.id");
+
+            promise.done(function (ajaxResult) {
+                var model = ajaxResult.course;
+                
+                appViewModel.add(model);
+
+                utils.spinner.hide();
+            });
+        });
+    </script>
+</div>
